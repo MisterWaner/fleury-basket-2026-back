@@ -1,0 +1,17 @@
+# PocketBase - Données SQLite et images/médias
+pb_data/
+
+# Fichiers exécutables PocketBase
+pocketbase
+pocketbase.exe
+*.zip
+
+# Environnement et dépendances
+.env
+.env.*
+node_modules/
+dist/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
