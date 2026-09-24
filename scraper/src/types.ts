@@ -1,5 +1,6 @@
 export interface ScrapedMatch {
     matchNumber?: string;
+    day?: string;
     date: string;
     homeTeam: string;
     awayTeam: string;
@@ -10,12 +11,17 @@ export interface ScrapedMatch {
 export interface ScrapedRanking {
     position: number;
     teamName: string;
+    logoUrl: string;
     points: number;
-    played: number;
+    gamesPlayed: number;
     won: number;
     lost: number;
     drawn: number;
+    incomplete: number;
+    penalties: number;
+    forfeits: number;
+    defeatsByPenalties: number;
     pointsFor: number;
     pointsAgainst: number;
-    diff: number;
+    pointsDiff: number;
 }
