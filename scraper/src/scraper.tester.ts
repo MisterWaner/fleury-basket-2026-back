@@ -1,15 +1,19 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 
+import { TEAMS_URLS } from "./module/ffbb/urls.js";
 import { scrapeRanking } from "./rankingScraper.js";
 import { scrapeMatches } from "./matchScraper.js";
 
 export async function testScraper() {
     try {
-        const url =
-            "https://competitions.ffbb.com/ligues/nor/comites/0014/clubs/nor0014086/equipes/200000005379029/classement";
+        const url = TEAMS_URLS["SENIORS"]?.calendarUrl;
 
-        const res = await scrapeRanking(url);
+        if (!url) {
+            throw new Error("URL du calendrier introuvable pour l'équipe SENIORS");
+        }
+
+        const res = await scrapeMatches(url);
 
         // Option A : Option recommandée - Fichier JSON bien formaté (indentation 2 espaces)
         const jsonPath = path.join(process.cwd(), "calendrier.json");

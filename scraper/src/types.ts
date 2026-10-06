@@ -25,3 +25,17 @@ export interface ScrapedRanking {
     pointsAgainst: number;
     pointsDiff: number;
 }
+
+export interface TeamUrls {
+    calendarUrl?: string;
+    rankingUrl?: string;
+}
+
+export interface TeamRecord {
+    id: string;
+    teamKey: string;
+    name?: string;
+    calendarUrl?: string;
+    rankingUrl?: string;
+    activeScraping: boolean;
+}
