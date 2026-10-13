@@ -1,5 +1,5 @@
 import { chromium } from "playwright";
-import type { ScrapedMatch } from "./types.js";
+import type { ScrapedMatch } from "../../types.js";
 
 export async function scrapeMatches(
     url: string,
@@ -91,6 +91,8 @@ export async function scrapeMatches(
                     .map((span) => parseInt(span.textContent?.trim() || "", 10))
                     .filter((val) => !isNaN(val));
 
+                const status = scores.length >= 2 ? "FINISHED" : "SCHEDULED";
+
                 results.push({
                     ...(matchNumber ? { matchNumber } : {}),
                     ...(day ? { day } : {}),
@@ -99,12 +101,13 @@ export async function scrapeMatches(
                     awayTeam: isHome ? opponentName : teamName,
                     homeScore: scores.length >= 2 ? scores[0] : null,
                     awayScore: scores.length >= 2 ? scores[1] : null,
+                    status: status,
                 });
             }
 
             return results;
         }, currentTeamName);
-        
+
         await browser.close();
         return matches;
     } catch (error) {
@@ -112,6 +115,4 @@ export async function scrapeMatches(
         throw error;
     }
 }
-
-
 

@@ -27,15 +27,16 @@ export interface ScrapedRanking {
 }
 
 export interface TeamUrls {
-    calendarUrl?: string;
+    calendarURL?: string;
     rankingUrl?: string;
 }
 
 export interface TeamRecord {
     id: string;
+    team: string;
     teamKey: string;
     name?: string;
-    calendarUrl?: string;
-    rankingUrl?: string;
+    calendarURL?: string;
+    rankingURL?: string;
     activeScraping: boolean;
 }
