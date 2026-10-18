@@ -35,22 +35,34 @@ export async function syncMatchesToPocketBase(
 
         // 2. Sync the matches to PocketBase
         for (const match of matches) {
-            const customId =
-                `${teamKey}_${match.day || "J0"}_${match.matchNumber || "0"}`
-                    .toLowerCase()
-                    .replace(/[^a-z0-9_]/g, "_");
+            // A. Strict cleaning of customId elements
+            const cleanDay = (match.day || "J0")
+                .toLowerCase()
+                .replace(/[^a-z0-9]/g, "");
+            const cleanMatchNum = (match.matchNumber || "0")
+                .toLowerCase()
+                .replace(/[^a-z0-9]/g, "");
 
+            // B. Determine if the match is home or away and clean opponent name
             const isHome = Boolean(
                 match.homeTeam &&
                 match.homeTeam.toUpperCase().includes("FLEURY"),
             );
             const opponent = isHome ? match.awayTeam : match.homeTeam;
+            const cleanOpponent = (opponent || "")
+                .toLowerCase()
+                .replace(/[^a-z0-9]/g, "");
+
+            // C. Construct the customId for the match
+            const customId = `${teamKey}_${cleanDay}_${cleanMatchNum}_${cleanOpponent}`;
 
             const isPassed = isMatchPassed(match.date || "N/A");
             const status = isPassed ? "FINISHED" : "SCHEDULED";
+
             console.log(
                 `[DEBUG] Date reçue: "${match.date}" | Scores: ${match.homeScore}-${match.awayScore}`,
             );
+
             const data = {
                 team: competitionId,
                 customId,
@@ -67,10 +79,16 @@ export async function syncMatchesToPocketBase(
                 updateAtFFBB: new Date().toISOString(),
             };
 
-            const existingRecord = await pb
-                .collection("matches")
-                .getFirstListItem(`customId="${customId}"`)
-                .catch(() => null);
+            console.log(`[DEBUG] Custom ID for match: ${customId}`);
+            console.log(
+                `[DEBUG] Statut Auth Superuser dans matchesSync: ${pb.authStore.isValid}`,
+            );
+            const searchResult = await pb.collection("matches").getList(1, 1, {
+                filter: `customId="${customId}"`,
+                requestKey: null,
+            });
+
+            const existingRecord = searchResult.items[0] || null;
 
             if (existingRecord) {
                 await pb.collection("matches").update(existingRecord.id, data);
@@ -90,6 +108,5 @@ export async function syncMatchesToPocketBase(
         }
     }
 }
-
 
 

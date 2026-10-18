@@ -1,4 +1,5 @@
 import { mkdir } from "fs/promises";
+import { config } from "dotenv";
 import path from "path";
 import PocketBase from "pocketbase";
 import { syncRankingToPocketBase } from "./module/ffbb/rankingsSync.js";
@@ -7,6 +8,7 @@ import { syncMatchesToPocketBase } from "./module/ffbb/matchesSync.js";
 import type { TeamRecord } from "./types.js";
 
 // Connexion à PocketBase
+config(); // Load environment variables from .env file
 const pb = new PocketBase(
     process.env.POCKETBASE_URL || "http://127.0.0.1:8090",
 );
@@ -17,16 +19,29 @@ async function run() {
     await mkdir(backupDir, { recursive: true });
 
     // Authentification à PocketBase
-    if (
-        process.env.POCKETBASE_ADMIN_EMAIL &&
-        process.env.POCKETBASE_ADMIN_PASSWORD
-    ) {
-        await pb
-            .collection("_superusers")
-            .authWithPassword(
-                process.env.POCKETBASE_ADMIN_EMAIL,
-                process.env.POCKETBASE_ADMIN_PASSWORD,
-            );
+    const email = process.env.POCKETBASE_ADMIN_EMAIL;
+    const password = process.env.POCKETBASE_ADMIN_PASSWORD;
+
+    if (!email || !password) {
+        console.error(
+            "Les informations d'authentification du superutilisateur ne sont pas définies dans les variables d'environnement.",
+        );
+        return;
+    }
+
+    try {
+        await pb.collection("_superusers").authWithPassword(email, password);
+
+        console.log(
+            "Auth Superuser réussie ! Token valide :",
+            pb.authStore.isValid,
+        );
+    } catch (error) {
+        console.error(
+            "Erreur lors de l'authentification du superutilisateur :",
+            error,
+        );
+        return; // Stop execution if authentication fails
     }
 
     // 1. Récupération dynamique des équipes depuis PocketBase
@@ -47,7 +62,8 @@ async function run() {
 
     // 2. Exécution
     for (const comp of competitions) {
-        if (!comp.calendarURL && !comp.rankingURL && !comp.activeScraping) continue;
+        if (!comp.calendarURL && !comp.rankingURL && !comp.activeScraping)
+            continue;
 
         if (!comp.team) {
             console.error(
@@ -55,7 +71,7 @@ async function run() {
             );
             continue;
         }
-        
+
         console.log(`\n=== Traitement : ${comp.teamKey} ===`);
 
         // A. Calendar
@@ -85,5 +101,4 @@ async function run() {
 }
 
 run();
-
 
