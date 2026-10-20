@@ -1,5 +1,5 @@
 import { chromium } from "playwright";
-import type { ScrapedMatch } from "../../types.js";
+import type { ScrapedMatch } from "../../../types.js";
 
 export async function scrapeMatches(
     url: string,

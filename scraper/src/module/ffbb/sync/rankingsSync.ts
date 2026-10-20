@@ -1,7 +1,7 @@
 import { writeFile } from "fs/promises";
 import path from "path";
 import type PocketBase from "pocketbase";
-import { scrapeRanking } from "./rankingScraper.js";
+import { scrapeRanking } from "../scrapers/rankingScraper.js";
 
 export async function syncRankingToPocketBase(
     pb: PocketBase,
@@ -9,44 +9,38 @@ export async function syncRankingToPocketBase(
     teamKey: string,
     rankingURL: string,
     backupDir: string,
-    timestamp: string,
 ) {
     try {
         console.log(`[Classement] Scraping en cours...`);
         const rankings = await scrapeRanking(rankingURL);
 
         // 1. Local backup of the scraped ranking
-        await writeFile(
-            `./data/classement_${teamKey.toLowerCase()}_latest.json`,
-            JSON.stringify(rankings, null, 2),
+        const backupFilePath = path.join(
+            backupDir,
+            `classement_${teamKey.toLowerCase()}_latest.json`,
         );
-        await writeFile(
-            path.join(
-                backupDir,
-                `classement_${teamKey.toLowerCase()}_${timestamp}.json`,
-            ),
-            JSON.stringify(rankings, null, 2),
-        );
+        await writeFile(backupFilePath, JSON.stringify(rankings, null, 2));
+        
         console.log(`[Classement] Backup completed for team: ${teamKey}`);
 
         // // 2. Sync the ranking to PocketBase
-        for (const rank of rankings) {
-            const isCurrentTeam = rank.teamName
+        for (const item of rankings) {
+            const isCurrentTeam = item.teamName
                 .toUpperCase()
                 .includes("FLEURY");
 
             // unique key for the ranking record
             const rankCustomKey =
-                `${teamKey}_pos_${rank.position}`.toLowerCase();
+                `${teamKey}_pos_${item.position}`.toLowerCase();
 
             const data = {
                 team_ref: teamRefId,
-                position: rank.position,
-                team: rank.teamName,
-                played: rank.gamesPlayed,
-                won: rank.won,
-                lost: rank.lost,
-                points: rank.points,
+                position: item.position,
+                team: item.teamName,
+                played: item.gamesPlayed,
+                won: item.won,
+                lost: item.lost,
+                points: item.points,
                 isCurrentTeam,
                 updateAtFFBB: new Date().toISOString(),
             };
@@ -54,16 +48,20 @@ export async function syncRankingToPocketBase(
             const existingRecord = await pb
                 .collection("rankings")
                 .getFirstListItem(
-                    `team_ref="${teamRefId}" && position=${rank.position}`,
+                    `team_ref="${teamRefId}" && position=${item.position}`,
                 )
                 .catch(() => null);
 
             if (existingRecord) {
                 await pb.collection("rankings").update(existingRecord.id, data);
-                console.log(`[Classement] Updated ranking for team: ${teamKey}, position: ${rank.position}`);
+                console.log(
+                    `[Classement] Updated ranking for team: ${teamKey}, position: ${item.position}`,
+                );
             } else {
                 await pb.collection("rankings").create(data);
-                console.log(`[Classement] Created ranking for team: ${teamKey}, position: ${rank.position}`);
+                console.log(
+                    `[Classement] Created ranking for team: ${teamKey}, position: ${item.position}`,
+                );
             }
         }
         console.log(

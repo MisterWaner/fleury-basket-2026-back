@@ -1,8 +1,8 @@
 import { writeFile } from "fs/promises";
 import path from "path";
 import type PocketBase from "pocketbase";
-import { scrapeMatches } from "./matchScraper.js";
-import { isMatchPassed } from "../../helpers/isMatchPassed.js";
+import { scrapeMatches } from "../scrapers/matchScraper.js";
+import { isMatchPassed } from "../../../helpers/isMatchPassed.js";
 
 export async function syncMatchesToPocketBase(
     pb: PocketBase,
@@ -10,7 +10,6 @@ export async function syncMatchesToPocketBase(
     teamKey: string,
     calendarURL: string,
     backupDir: string,
-    timestamp: string,
 ) {
     try {
         console.log(`[Calendrier] Scraping en cours...`);
@@ -20,17 +19,12 @@ export async function syncMatchesToPocketBase(
         );
 
         // 1. Local backup of the scraped matches
-        await writeFile(
-            `./data/calendrier_${teamKey.toLowerCase()}_latest.json`,
-            JSON.stringify(matches, null, 2),
+        const backupFilePath = path.join(
+            backupDir,
+            `calendrier_${teamKey.toLowerCase()}_latest.json`,
         );
-        await writeFile(
-            path.join(
-                backupDir,
-                `calendrier_${teamKey.toLowerCase()}_${timestamp}.json`,
-            ),
-            JSON.stringify(matches, null, 2),
-        );
+        await writeFile(backupFilePath, JSON.stringify(matches, null, 2));
+
         console.log(`[Calendrier] Backup completed for team: ${teamKey}`);
 
         // 2. Sync the matches to PocketBase
@@ -108,5 +102,4 @@ export async function syncMatchesToPocketBase(
         }
     }
 }
-
 

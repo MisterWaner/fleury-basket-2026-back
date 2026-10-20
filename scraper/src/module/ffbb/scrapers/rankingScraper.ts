@@ -1,5 +1,5 @@
 import { chromium } from "playwright";
-import type { ScrapedRanking } from "../../types.js";
+import type { ScrapedRanking } from "../../../types.js";
 
 export async function scrapeRanking(url: string): Promise<ScrapedRanking[]> {
     const browser = await chromium.launch({ headless: true });

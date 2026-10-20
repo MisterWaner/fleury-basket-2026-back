@@ -2,8 +2,8 @@ import { mkdir } from "fs/promises";
 import { config } from "dotenv";
 import path from "path";
 import PocketBase from "pocketbase";
-import { syncRankingToPocketBase } from "./module/ffbb/rankingsSync.js";
-import { syncMatchesToPocketBase } from "./module/ffbb/matchesSync.js";
+import { syncRankingToPocketBase } from "./module/ffbb/sync/rankingsSync.js";
+import { syncMatchesToPocketBase } from "./module/ffbb/sync/matchesSync.js";
 
 import type { TeamRecord } from "./types.js";
 
@@ -14,7 +14,6 @@ const pb = new PocketBase(
 );
 
 async function run() {
-    const timestamp = new Date().toISOString().replace(/:/g, "-");
     const backupDir = path.join(process.cwd(), "data", "backups");
     await mkdir(backupDir, { recursive: true });
 
@@ -82,7 +81,6 @@ async function run() {
                 comp.teamKey,
                 comp.calendarURL,
                 backupDir,
-                timestamp,
             );
         }
 
@@ -94,7 +92,6 @@ async function run() {
                 comp.teamKey,
                 comp.rankingURL,
                 backupDir,
-                timestamp,
             );
         }
     }
