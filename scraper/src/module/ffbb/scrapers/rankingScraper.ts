@@ -65,7 +65,7 @@ export async function scrapeRanking(url: string): Promise<ScrapedRanking[]> {
                     parseInt(matchesDivs[4]?.textContent?.trim() || "0", 10) ||
                     0;
                 const penalties =
-                    parseInt(matchesDivs[5]?.textContent?.trim() || "0", 10) ||
+                    parseInt(tds[5]?.textContent?.trim() || "0", 10) ||
                     0;
                 const forfeits =
                     parseInt(matchesDivs[6]?.textContent?.trim() || "0", 10) ||

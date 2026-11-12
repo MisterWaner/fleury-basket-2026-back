@@ -44,6 +44,7 @@ export async function syncRankingToPocketBase(
                 pointsFor: item.pointsFor,
                 pointsAgainst: item.pointsAgainst,
                 pointsDiff: item.pointsDiff,
+                penalties: item.penalties,
                 isCurrentTeam,
                 updateAtFFBB: new Date().toISOString(),
             };
